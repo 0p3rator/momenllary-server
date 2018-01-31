@@ -47,7 +47,8 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
 """.format(point1,point2)
     print sql
     try:
-        conn = psycopg2.connect(database = 'postgres', user = "postgres", password = "hdmap430", host = "172.16.10.49")
+        #conn = psycopg2.connect(database = 'postgres', user = "postgres", password = "hdmap430", host = "172.16.10.49")
+        conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
         cur = conn.cursor()     
         cur.execute(sql)
         rows = cur.fetchall()
@@ -65,7 +66,6 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
             ##calculate euler rotation from quanternion
             quanternion = map(lambda x:float(x),row[5:9])
             ca = quat2euler(quanternion)[2]
-            print ca
             feature["properties"]["ca"] = str(ca)
             feature["properties"]["key"] = imagekey
             feature["properties"]["captured_at"] = local_str_time
