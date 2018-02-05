@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request, Response, redirect
 from flask import abort
 import psycopg2
 from jsonifyimage import jsonify_image
+from jsonifyimage import get_path
 from mycolorlog import UseStyle
 from sign_s3url import create_presigned_url
 import json
@@ -66,11 +67,13 @@ def get_images():
 def get_image_key():
     print UseStyle('Image_Key',   fore = 'red')
     params = request.args
-    image_key = params.get('imagekey')
-    print image_key
-    image_key = 'map-data/' + image_key
-    print UseStyle(image_key, fore = 'blue')
-    url = create_presigned_url('momenta-hdmap',image_key)
+    imagekey = params.get('imagekey')
+    imagePath = get_path(imagekey)
+    print imagePath
+
+    imagePath = 'map-data/' + imagePath
+    print UseStyle(imagePath, fore = 'blue')
+    url = create_presigned_url('momenta-hdmap',imagePath)
     print UseStyle(url, fore = 'red')
     return redirect(url)
     return json.dumps({'url': url})
@@ -90,4 +93,4 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    app.run(host = '127.0.0.1' ,port = 5123, debug=False)
+    app.run(host = '127.0.0.1' ,port = 5123, debug=True)

@@ -40,7 +40,7 @@ def jsonify_image(bbox):
     point1 = ", ".join(bbox[0:2])
     point2 = ", ".join(bbox[2:4])
     sql = """SELECT keyframes.image_packet_id, keyframes.filename, ST_AsText(keyframes.geom), image_packets.plateno, \
-image_packets.timestamp, keyframes.qw, keyframes.qy, keyframes.qz, keyframes.qz \
+image_packets.timestamp, keyframes.qw, keyframes.qx, keyframes.qy, keyframes.qz, keyframes.id \
 from keyframes left join image_packets \
 on (keyframes.image_packet_id = image_packets.id) where keyframes.geom && ST_SetSRID(\
 ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
@@ -60,12 +60,14 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
             local_str_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.strptime(str(row[4]), "%Y-%m-%d %H:%M:%S"))
             imagekey = row[3] + '-' 
             imagekey += local_str_time + '/keyframes/images/' + filename + '.jpg'
+            imagekey = row[9]
+            print imagekey
             #print imagekey
             #print "loc:" 
             #print loc
             ##calculate euler rotation from quanternion
             quanternion = map(lambda x:float(x),row[5:9])
-            ca = quat2euler(quanternion)[2]
+            ca = quat2euler(quanternion)[2] * 57.3
             feature["properties"]["ca"] = str(ca)
             feature["properties"]["key"] = imagekey
             feature["properties"]["captured_at"] = local_str_time
@@ -77,6 +79,31 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
         if conn is not None:
             conn.close() 
     return FeatureCollection
+
+def get_path(imageKey):
+    conn = None
+    imagePath = ''
+    try:
+        imagePacketNoReq = """select image_packet_id, filename from keyframes where id = {}""".format(imageKey)
+        conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
+        cur = conn.cursor()     
+        cur.execute(imagePacketNoReq)
+        result = cur.fetchone()
+        image_packet_id = result[0]
+        filename = result[1]
+        imagePacketDateReq = """select plateno, timestamp from image_packets where id = {}""".format(image_packet_id)
+        cur.execute(imagePacketDateReq)
+        result = cur.fetchone()
+        plateno = result[0]
+        timestamp = result[1]
+        local_str_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.strptime(str(timestamp), "%Y-%m-%d %H:%M:%S"))
+        imagePath = plateno + '-' + local_str_time + '/keyframes/images/' + filename + '.jpg'
+    except (Exception, psycopg2.DatabaseError) as error:
+        print (error)
+    finally:
+        if conn is not None:
+            conn.close()
+    return imagePath
 
 extract_loc("POINT Z (116.373070834778 39.9542073456365 41.0559972521369)")
 
