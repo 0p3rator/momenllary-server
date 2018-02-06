@@ -63,6 +63,7 @@ def get_images():
     resp.headers['Link'] = 'http://I.Want.you.com'
     return resp
 
+@app.route('/imagekey')
 @app.route('/imagekey/')
 def get_image_key():
     print UseStyle('Image_Key',   fore = 'red')
@@ -93,4 +94,4 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    app.run(host = '127.0.0.1' ,port = 5123, debug=True)
+    app.run(host = '0.0.0.0' ,port = 5123, debug=True)
