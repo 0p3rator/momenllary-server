@@ -71,6 +71,7 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
             feature["properties"]["ca"] = str(ca)
             feature["properties"]["key"] = imagekey
             feature["properties"]["captured_at"] = local_str_time
+            feature["properties"]["username"] = row[3]
             feature["geometry"]["coordinates"] = copy.deepcopy(loc)
             FeatureCollection["features"].append(copy.deepcopy(feature))
     except (Exception, psycopg2.DatabaseError) as error:

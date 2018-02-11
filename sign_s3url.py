@@ -14,5 +14,5 @@ def create_presigned_url(bucket, key):
     return presigned_url
 
 
-print create_presigned_url('momenta-hdmap','map-data/B6-2017-12-13-22-29-40/keyframes/images/1513175380205.jpg')
-print create_presigned_url('momenta-hdmap','map-data/B6-2017-12-13-11-59-32/keyframes/images/1513137572365.jpg')
+
+print create_presigned_url('momenta-hdmap','map-data/B6-2017-12-13-11-59-32/keyframes/json_lane/1513137572365.json')
