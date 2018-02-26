@@ -8,7 +8,9 @@ class PostgreSql:
         self.__cur = conn.cursor()     
         
         self.__conn = psycopg2.connect(dbname=conf.db_databaseName, user=conf.db_username, password=conf.db_password, host=conf.db_host, port=conf.db_port)
+    
     def Query(self,sqlstr):
         return __cur.execute(sqlstr)
+    
     def __del__(self):
         self.__conn.close()

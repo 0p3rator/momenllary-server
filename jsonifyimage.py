@@ -3,7 +3,11 @@ import copy
 import psycopg2
 import time
 from transforms3d.euler import quat2euler
+from transforms3d.quaternions import quat2mat
+from transforms3d.euler import mat2euler
 import numpy as np
+
+matConvert = np.array([1, 0, 0, 0, 0, 1, 0, -1, 0]).reshape(3,3)
 
 feature = {
 'type' : 'Feature',
@@ -61,15 +65,20 @@ ST_MakeBox2D(ST_Point({}),ST_Point({})),4326)\
             imagekey = row[3] + '-' 
             imagekey += local_str_time + '/keyframes/images/' + filename + '.jpg'
             imagekey = row[9]
-            print imagekey
+            #print imagekey
             #print imagekey
             #print "loc:" 
             #print loc
             ##calculate euler rotation from quanternion
             quanternion = map(lambda x:float(x),row[5:9])
-            ca = quat2euler(quanternion)[2] * 57.3
+            matTemp = quat2mat(quanternion)
+            matTemp = matConvert.dot(matTemp)
+            eulerTemp = mat2euler(matTemp,"sxyz")
+            ca = eulerTemp[2] * 57.3
+
+            #ca = quat2euler(quanternion,"szyx")[2] * 57.3 * -1
             feature["properties"]["ca"] = str(ca)
-            feature["properties"]["key"] = imagekey
+            feature["properties"]["key"] = imagekey 
             feature["properties"]["captured_at"] = local_str_time
             feature["properties"]["username"] = row[3]
             feature["geometry"]["coordinates"] = copy.deepcopy(loc)

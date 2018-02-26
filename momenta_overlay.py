@@ -35,7 +35,6 @@ def before_request():
 
 @app.route('/')
 def index():
-    return redirect('https://www.baidu.com')
     js = json.dumps({'task':'taskliulwx'})
     resp = Response(js, status=200, mimetype='application/json')
     resp.headers['link'] = 'http://luisrei.com'
@@ -51,7 +50,7 @@ def hello1():
 
     return jsonify(FeatureCollection)
     
-@app.route('/images/')
+#@app.route('/images/')
 @app.route('/images')
 def get_images():   
     params = request.args
@@ -63,7 +62,7 @@ def get_images():
     resp.headers['Link'] = 'http://I.Want.you.com'
     return resp
 
-@app.route('/imagekey/')
+#@app.route('/imagekey/')
 @app.route('/imagekey')
 def get_image_key():
     print UseStyle('Image_Key',   fore = 'red')
@@ -105,9 +104,6 @@ def get_detections():
     url = create_presigned_url('momenta-hdmap',jsonPath)
     print UseStyle(url, fore = 'red')
     return redirect(url)
-
-
-
 
 @app.after_request
 def after_request(response):
