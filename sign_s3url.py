@@ -1,7 +1,7 @@
 import boto3
 session = boto3.session.Session()
-s3 = session.client(endpoint_url='http://s3.momenta.works', aws_access_key_id='2AOP8OZF6542K3ROFD5P',
-                    aws_secret_access_key='gR8j2IssVJKm90XWEgz421aispgdQ1Ph8EYIQ59x', service_name='s3')
+s3 = session.client(endpoint_url='https://47.104.191.118:9000', aws_access_key_id='JIWVX4HLXF26P81HXDG7',
+                    aws_secret_access_key='NtVENUMdoFh5xEfy5TJEJoxGWzBdbD4YFTVszV/+', service_name='s3')
 
 
 def get_jpg(m):

@@ -12,7 +12,7 @@ def get_path(imageKey):
     imagePath = ''
     try:
         imagePacketNoReq = """select image_packet_id, filename from keyframes where id = {}""".format(imageKey)
-        conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
+        conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="http://127.0.0.1", port=5432)
         cur = conn.cursor()     
         cur.execute(imagePacketNoReq)
         result = cur.fetchone()

@@ -12,6 +12,8 @@ docutils==0.14
 Flask==0.12.2
 Flask-RESTful==0.3.6
 futures==3.2.0
+gunicorn==19.7.1
+httplib2==0.10.3
 idna==2.6
 itsdangerous==0.24
 Jinja2==2.10
@@ -28,6 +30,7 @@ rsa==3.4.2
 s3transfer==0.1.12
 Shapely==1.6.3
 six==1.11.0
+tqdm==4.19.5
 transforms3d==0.3.1
 urllib3==1.22
 Werkzeug==0.14.1
