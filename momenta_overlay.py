@@ -1,13 +1,16 @@
 #!flask/bin/python
+# -*- coding: UTF-8 -*- 
 from flask import Flask, jsonify, request, Response, redirect
 from flask import abort
 import psycopg2
-from jsonifyimage import jsonify_image
 from jsonifyimage import get_path
 from mycolorlog import UseStyle
 from sign_s3url import create_presigned_url
-import service.object_service as object_service
+#import service.object_service as object_service
+from service.image_service import ImageService
 import json
+import re
+import time as time
 
 conn = None
 
@@ -52,14 +55,39 @@ def hello1():
     
 #@app.route('/images/')
 @app.route('/images')
-def get_images():   
+def get_images():  
+
+    starttime = time.clock()
+
+    requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
+    requestUrl = re.sub('\'', '', requestUrl)
+
     params = request.args
+
+    startkey = params.get('start_key')
+    if startkey is not None:
+        requestUrl = re.sub('&start_key=[0-9]+', '', requestUrl)
+
     bbox = params.get('bbox').split(',')
-    FeatureCollection = jsonify_image(bbox) 
+    print UseStyle(bbox, fore = 'yellow')
+    #FeatureCollection = jsonify_image(bbox) 
+    imageservice = ImageService()
+    FeatureCollection = imageservice.get_images(params, bbox) 
+
+    link = '<{}>; rel="first",'.format(requestUrl)
+    if (FeatureCollection['next_start_key'] != 0):
+        link = """{}<{}&start_key={}>; rel="next" """.format(link, requestUrl, FeatureCollection['next_start_key'])
+    del FeatureCollection['next_start_key']
+
+
+    length = len(FeatureCollection['features'])
+    print UseStyle(length, fore = 'yellow')
     jsonResp = json.dumps(FeatureCollection) 
-    js = json.dumps({'task':'taskliulwx'})
     resp = Response(jsonResp, status=200,mimetype='application/json')
-    resp.headers['Link'] = 'http://I.Want.you.com'
+    resp.headers['Link'] = link
+
+    endtime = time.clock()
+    print UseStyle(('Total Time cost:', endtime - starttime), fore = 'yellow')
     return resp
 
 #@app.route('/imagekey/')
@@ -110,7 +138,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Expose-Headers','Link')
+    response.headers.add('Access-Control-Expose-Headers','link')
     return response
 
 
