@@ -11,12 +11,10 @@ keyframes.geom && ST_SetSRID(ST_MakeBox2D(
     ST_Point(116.2088727951, 39.8560581025)),4326) and timestamp > '2018-01-30' order by image_packets.timestamp """
 sql = """SELECT distinct (image_packets.plateno, image_packets.timestamp), image_packets.plateno, image_packets.timestamp from
 image_packets left join keyframes on (keyframes.image_packet_id = image_packets.id) where
-keyframes.geom && ST_SetSRID(ST_MakeBox2D(
-    ST_Point(116.1620521545,  39.8821449956),
-    ST_Point(116.2088727951, 39.8560581025)),4326) and timestamp > '2017-11-30' order by image_packets.timestamp """
+ timestamp > '2017-11-30' order by image_packets.timestamp """
 
 
-basedir = "/Users/wangchangyu/s3imagepacket-list/yuanboyuan-list/"
+basedir = "/Users/wangchangyu/s3imagepacket-list/"
 try:
     conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
     cur = conn.cursor()

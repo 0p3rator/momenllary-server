@@ -8,6 +8,7 @@ from transforms3d.quaternions import quat2mat
 from transforms3d.euler import mat2euler
 import numpy as np
 import sys
+import re
 sys.path.append("..")
 from mycolorlog import UseStyle
 
@@ -32,13 +33,15 @@ feature = {
 class ImageService(object):
     def __init__(self):
         self.__matConvert = np.array([1, 0, 0, 0, 0, 1, 0, -1, 0]).reshape(3,3)
-        print "I am here"
 
     def get_images(self, params, bbox):
         conn = None
         
         perPage = params.get('per_page')
         startKey = params.get('start_key')
+        image_packet = params.get('image_packet')
+        print image_packet
+        image_packet_filter = self.__extract_image_packet(image_packet)
         if not startKey:
             startKey = 0
 
@@ -54,8 +57,8 @@ class ImageService(object):
     image_packets.timestamp, keyframes.qw, keyframes.qx, keyframes.qy, keyframes.qz, keyframes.id \
     from keyframes left join image_packets \
     on (keyframes.image_packet_id = image_packets.id) where keyframes.geom && ST_SetSRID(\
-    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) and keyframes.id >= {} order by keyframes.id limit {}\
-    """.format(point1, point2, startKey, perQuery)
+    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and keyframes.id >= {} order by keyframes.id limit {}\
+    """.format(point1, point2, image_packet_filter, startKey, perQuery)
         print sql
         try:
             #conn = psycopg2.connect(database = 'postgres', user = "postgres", password = "hdmap430", host = "172.16.10.49")
@@ -95,6 +98,26 @@ class ImageService(object):
         loc = loc.split(' ')[:2]
         return loc
 
+    def __extract_image_packet(self, image_packets):
+        reResult = re.search('^B[0-9]-20[0-9]{2}-', image_packets, re.M|re.I)
+        if(not reResult):
+            return ""
+        else:            
+            image_packets_arr = image_packets.split(' ')
+            plateno = reduce(self.__remove_repeat, map(lambda x: x[0:2],image_packets_arr))
+            print plateno
+            timestamp_arr = map(lambda x: time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(x[3:], "%Y-%m-%d-%H-%M-%S")), image_packets_arr)
+            timestamp = reduce(lambda x, y: x + "', '" + y  , timestamp_arr)
+            print """and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp)
+            return """and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp)
+
+    def __remove_repeat(self,x,y):
+        if y not in x:
+            return x + "', '" + y
+        else:
+            return x
+
+
     #generate feature according to the sql record
     def __extract_feature(self, row):
         loc = self.__extract_loc(row[2])
@@ -130,4 +153,6 @@ class Kls(object):
 
 if __name__ == '__main__':
     iss = ImageService()
-    iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
+    #iss.remove_repeat('B5', 'B6')
+    #iss.extract_image_packet("B5-2017-12-01-15-30-10")
+    #iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])

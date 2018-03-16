@@ -16,20 +16,20 @@ conn = None
 
 app = Flask(__name__)
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
-]
+# tasks = [
+#     {git 
+#         'id': 1,
+#         'title': u'Buy groceries',
+#         'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
+#         'done': False
+#     },
+#     {
+#         'id': 2,
+#         'title': u'Learn Python',
+#         'description': u'Need to find a good Python tutorial on the web', 
+#         'done': False
+#     }
+# ]
 
 @app.before_request
 def before_request():
@@ -143,4 +143,4 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0' ,port = 5123, debug=True)
+    app.run(host = '0.0.0.0' ,port = 5123, debug=False)

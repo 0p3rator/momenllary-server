@@ -1,0 +1,10 @@
+import psycopg2
+try:
+    #conn = psycopg2.connect(database = 'postgres', user = "postgres", password = "hdmap430", host = "172.16.10.49")
+    starttime = time.clock()
+    conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="http://47.104.191.118", port=5432)
+    connecttime = time.clock()
+    cur = conn.cursor() 
+    print "OK"  
+except (Exception, psycopg2.DatabaseError) as error:
+    print "Fail"
