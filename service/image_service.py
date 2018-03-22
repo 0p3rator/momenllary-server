@@ -36,12 +36,17 @@ class ImageService(object):
 
     def get_images(self, params, bbox):
         conn = None
+
         
         perPage = params.get('per_page')
         startKey = params.get('start_key')
         image_packet = params.get('image_packet')
         print image_packet
-        image_packet_filter = self.__extract_image_packet(image_packet)
+        image_packet_filter = ""
+        if (image_packet is None):
+            image_packet_filter = ""
+        else:
+            image_packet_filter = self.__extract_image_packet(image_packet)
         if not startKey:
             startKey = 0
 
@@ -104,6 +109,7 @@ class ImageService(object):
             return ""
         else:            
             image_packets_arr = image_packets.split(' ')
+            print image_packets_arr
             plateno = reduce(self.__remove_repeat, map(lambda x: x[0:2],image_packets_arr))
             print plateno
             timestamp_arr = map(lambda x: time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(x[3:], "%Y-%m-%d-%H-%M-%S")), image_packets_arr)

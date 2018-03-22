@@ -56,6 +56,7 @@ def hello1():
 #@app.route('/images/')
 @app.route('/images')
 def get_images():  
+    print 10
 
     starttime = time.clock()
 
@@ -121,6 +122,7 @@ def get_objects():
 #@app.route('/detection/')
 @app.route('/detection', methods=['GET'])
 def get_detections():
+    starttime = time.time()
     params = request.args
     imageKey = params.get('imagekey')
     tagType = params.get('tag')
@@ -131,6 +133,8 @@ def get_detections():
     jsonPath = 'map-data/' + jsonPath
     url = create_presigned_url('momenta-hdmap',jsonPath)
     print UseStyle(url, fore = 'red')
+    endtime = time.time()
+    print (endtime - starttime)
     return redirect(url)
 
 @app.after_request
@@ -143,4 +147,4 @@ def after_request(response):
 
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0' ,port = 5123, debug=False)
+    app.run(host = '0.0.0.0' ,port = 5123, debug=True)
