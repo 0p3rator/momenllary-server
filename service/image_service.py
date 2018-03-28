@@ -11,6 +11,7 @@ import sys
 import re
 sys.path.append("..")
 from mycolorlog import UseStyle
+from sql.postgresql import PostgreSql
 
 feature = {
 'type' : 'Feature',
@@ -33,11 +34,10 @@ feature = {
 class ImageService(object):
     def __init__(self):
         self.__matConvert = np.array([1, 0, 0, 0, 0, 1, 0, -1, 0]).reshape(3,3)
+        self.__psql = PostgreSql()
 
     def get_images(self, params, bbox):
-        conn = None
 
-        
         perPage = params.get('per_page')
         startKey = params.get('start_key')
         image_packet = params.get('image_packet')
@@ -64,35 +64,18 @@ class ImageService(object):
     on (keyframes.image_packet_id = image_packets.id) where keyframes.geom && ST_SetSRID(\
     ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and keyframes.id >= {} order by keyframes.id limit {}\
     """.format(point1, point2, image_packet_filter, startKey, perQuery)
-        print sql
-        try:
-            #conn = psycopg2.connect(database = 'postgres', user = "postgres", password = "hdmap430", host = "172.16.10.49")
-            starttime = time.clock()
-            conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
-            connecttime = time.clock()
-            cur = conn.cursor()     
-            cur.execute(sql)
-            rows = cur.fetchall()
-            querytime = time.clock()
 
-            print UseStyle(("Connect time = " ,connecttime - starttime), fore = 'yellow')
-            print UseStyle(("Querytime = ", querytime - connecttime), fore = 'yellow')
+        rows = self.__psql.execute(sql)
+        nextStartKey = 0
+        
+        if len(rows) == perQuery:
+            nextStartKey = rows[-1][9]
+            rows = rows[:-1]
+        FeatureCollection['next_start_key'] = nextStartKey
 
-            nextStartKey = 0
-            #print("The number of parts: ", cur.rowcount)
-            if len(rows) == perQuery:
-                nextStartKey = rows[-1][9]
-                rows = rows[:-1]
-            FeatureCollection['next_start_key'] = nextStartKey
+        for row in rows:
+            FeatureCollection["features"].append(copy.deepcopy(self.__extract_feature(row)))
 
-            for row in rows:
-                FeatureCollection["features"].append(copy.deepcopy(self.__extract_feature(row)))
-
-        except (Exception, psycopg2.DatabaseError) as error:
-            print UseStyle(error, fore = 'red')
-        finally:
-            if conn is not None:
-                conn.close() 
         return FeatureCollection
 
     
@@ -109,7 +92,6 @@ class ImageService(object):
             return ""
         else:            
             image_packets_arr = image_packets.split(' ')
-            print image_packets_arr
             plateno = reduce(self.__remove_repeat, map(lambda x: x[0:2],image_packets_arr))
             print plateno
             timestamp_arr = map(lambda x: time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(x[3:], "%Y-%m-%d-%H-%M-%S")), image_packets_arr)
@@ -148,17 +130,8 @@ class ImageService(object):
         feature["geometry"]["coordinates"] = copy.deepcopy(loc)
         return feature
 
-    
-
-class Kls(object):
-    def __init__(self, data):
-        self.data = data
-
-    def printd(self):
-        print(self.data)
-
 if __name__ == '__main__':
     iss = ImageService()
     #iss.remove_repeat('B5', 'B6')
     #iss.extract_image_packet("B5-2017-12-01-15-30-10")
-    #iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
+    iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
