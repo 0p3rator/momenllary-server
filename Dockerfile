@@ -4,7 +4,7 @@ WORKDIR /app
 
 ADD . /app
 
-RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirement.txt \
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt \
 && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple gunicorn \
 && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple gevent
 
