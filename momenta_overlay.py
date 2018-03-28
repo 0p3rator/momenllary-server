@@ -3,7 +3,6 @@
 from flask import Flask, jsonify, request, Response, redirect, url_for
 from flask import abort
 import psycopg2
-from jsonifyimage import get_locations
 from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
@@ -96,7 +95,7 @@ def get_detections():
     return redirect(url)
 
 
-@app.route('/location', methods=['GET','POST'])
+@app.route('/location/keyframe', methods=['GET','POST'])
 def get_frame_location():
     imageKey = request.values.get('imagekey')
     print imageKey

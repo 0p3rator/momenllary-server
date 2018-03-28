@@ -9,7 +9,7 @@ Jinja2==2.10
 jmespath==0.9.3
 MarkupSafe==1.0
 numpy==1.14.2
-psycopg2==2.7.4
+psycopg2-binary==2.7.4
 python-dateutil==2.6.1
 s3transfer==0.1.13
 six==1.11.0
