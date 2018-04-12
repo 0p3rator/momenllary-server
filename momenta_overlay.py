@@ -6,6 +6,7 @@ import psycopg2
 from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
+from service.check_service import CheckService
 import json
 import re
 import time as time
@@ -29,9 +30,10 @@ def index():
 @app.route('/sequences/')
 def hello1():
     params = request.args
-    bbox = params.get('bbox').split(',')
-    FeatureCollection = jsonify_image(bbox)  
-    return jsonify(FeatureCollection)
+    # bbox = params.get('bbox').split(',')
+    # FeatureCollection = jsonify_image(bbox) 
+    result = {'test':1} 
+    return Response(json.dumps(result), status = 200,mimetype='application/json')
     
 #@app.route('/images/')
 @app.route('/images')
@@ -111,6 +113,13 @@ def get_packet_location():
     result = detectionService.get_packet_location(packetName)
     return Response(json.dumps(result), status = 200, mimetype = 'application/json')
 
+@app.route('/checkresult',methods=['GET', 'POST'])
+def record_check_result():
+    checkService = CheckService()
+    result = checkService.upload_check_result(request)
+    return Response(json.dumps(result), status = 200, mimetype = 'application/json')
+
+
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -118,6 +127,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET')
     response.headers.add('Access-Control-Expose-Headers','link')
     return response
+
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0' ,port = 5123, debug=True)

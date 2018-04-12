@@ -1,7 +1,6 @@
 
 import json
 import copy
-import psycopg2
 import time
 from transforms3d.euler import quat2euler
 from transforms3d.quaternions import quat2mat
@@ -126,7 +125,7 @@ class ImageService(object):
         feature["properties"]["ca"] = str(ca)
         feature["properties"]["key"] = imagekey 
         feature["properties"]["captured_at"] = local_str_time
-        feature["properties"]["username"] = row[3]
+        feature["properties"]["username"] = row[3] 
         feature["geometry"]["coordinates"] = copy.deepcopy(loc)
         return feature
 
