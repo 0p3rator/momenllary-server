@@ -48,6 +48,7 @@ class PostgreSql(object):
             
         except (Exception, psycopg2.DatabaseError) as error:
             print UseStyle(error, fore = 'red')
+            raise Exception
         finally:
             if conn is not None:
                 self.__conn.putconn(conn)

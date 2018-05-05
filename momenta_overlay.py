@@ -7,13 +7,16 @@ from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
 from service.check_service import CheckService
+from login import login_router
 import json
 import re
 import time as time
+import os 
 
 conn = None
 
 app = Flask(__name__)
+# app.register_blueprint(login_router)
 
 @app.before_request
 def before_request():
@@ -27,11 +30,12 @@ def index():
     resp = Response(txt, status=200, mimetype='application/json')
     return resp
 
-@app.route('/sequences/')
+@app.route('/sequences')
 def hello1():
+    print 1
     params = request.args
     # bbox = params.get('bbox').split(',')
-    # FeatureCollection = jsonify_image(bbox) 
+    # FeatureCollection = jsonify_image(bbox) chance
     result = {'test':1} 
     return Response(json.dumps(result), status = 200,mimetype='application/json')
     
@@ -83,9 +87,9 @@ def get_image_key():
 def get_objects():
     params = request.args
     bbox = params.get('bbox').split(',')
-    object_service.get_objects(bbox)
+    # object_service.get_objects(bbox)
     print UseStyle(bbox, fore = 'red')
-    return jsonify({'tasks': tasks})  
+    return jsonify({'tasks': 'ab'})  
 
 #@app.route('/detection/')
 @app.route('/detection', methods=['GET'])
@@ -115,9 +119,19 @@ def get_packet_location():
 
 @app.route('/checkresult',methods=['GET', 'POST'])
 def record_check_result():
+    print request.values
     checkService = CheckService()
     result = checkService.upload_check_result(request)
     return Response(json.dumps(result), status = 200, mimetype = 'application/json')
+
+@app.route('/checkresult/<variable>',methods=['GET'])
+def get_check_result(variable):
+    checkService = CheckService()
+    try:
+        result = checkService.get_check_result(variable, request)
+        return Response(json.dumps(result), status = 200, mimetype = 'application/json')
+    except:
+        abort(404)
 
 
 @app.after_request
