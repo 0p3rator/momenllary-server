@@ -124,8 +124,8 @@ class ImageService(object):
         #ca = quat2euler(quanternion,"szyx")[2] * 57.3 * -1
         feature["properties"]["ca"] = str(ca)
         feature["properties"]["key"] = imagekey 
-        feature["properties"]["captured_at"] = local_str_time
-        feature["properties"]["username"] = row[3] 
+        feature["properties"]["captured_at"] = row[1]
+        feature["properties"]["username"] = row[3] + '-' + local_str_time 
         feature["geometry"]["coordinates"] = copy.deepcopy(loc)
         return feature
 
@@ -133,4 +133,4 @@ if __name__ == '__main__':
     iss = ImageService()
     #iss.remove_repeat('B5', 'B6')
     #iss.extract_image_packet("B5-2017-12-01-15-30-10")
-    iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
+    # iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
