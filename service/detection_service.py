@@ -56,7 +56,7 @@ class DetectionService(object):
         print timestamp
         sqlString = "select ST_AsText(keyframes.geom) \
         as point from keyframes where image_packet_id = (select id from image_packets where plateno = '{}' and timestamp = '{}')  \
-        order by id limit 1".format(plateno, timestamp)
+        order by id".format(plateno, timestamp)
         print sqlString
         result = self.__psql.execute(sqlString)[0]
         resultJson = {}
