@@ -112,14 +112,15 @@ def record_check_result():
     checkService = CheckService()
     try:
         result = checkService.upload_check_result(request)
+        resp = None
+        origin = request.environ['HTTP_ORIGIN'] 
         if result['result'] == 'OK':
             resp = Response(json.dumps(result), status = 200, mimetype = 'application/json')
-            origin = request.environ['HTTP_ORIGIN']
-            resp.headers.add('Access-Control-Allow-Credentials', "true")
-            resp.headers.add('Access-Control-Allow-Origin', origin)
-            return resp
         else:
-            return Response(json.dumps(result), 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
+            resp = Response(json.dumps(result), 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
+        resp.headers.add('Access-Control-Allow-Credentials', "true")
+        resp.headers.add('Access-Control-Allow-Origin', origin)
+        return resp
     except Exception as e:
         print e
         abort(404)
