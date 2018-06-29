@@ -85,6 +85,13 @@ class ImageService(object):
         loc = loc.split(' ')[:2]
         return loc
 
+    def __extract_height(self, position):
+        indexstart = position.find('(')
+        indexend = position.find(')')
+        loc = position[indexstart+1:indexend]
+        loc = loc.split(' ')[2:]
+        return loc
+
     def __extract_image_packet(self, image_packets):
         reResult = re.search('^B[0-9]-20[0-9]{2}-', image_packets, re.M|re.I)
         if(not reResult):
@@ -104,7 +111,6 @@ class ImageService(object):
         else:
             return x
 
-
     #generate feature according to the sql record
     def __extract_feature(self, row):
         loc = self.__extract_loc(row[2])
@@ -117,7 +123,7 @@ class ImageService(object):
         ##calculate euler rotation from quanternion
         quanternion = map(lambda x:float(x),row[5:9])
         matTemp = quat2mat(quanternion)
-        matTemp = self.__matConvert.dot(matTemp)
+        # matTemp = self.__matConvert.dot(matTemp)
         eulerTemp = mat2euler(matTemp,"sxyz")
         ca = eulerTemp[2] * 57.3
 
@@ -127,6 +133,8 @@ class ImageService(object):
         feature["properties"]["captured_at"] = row[1]
         feature["properties"]["username"] = row[3] + '-' + local_str_time 
         feature["geometry"]["coordinates"] = copy.deepcopy(loc)
+        feature["properties"]['campos'] = quanternion
+        feature["properties"]['height'] = self.__extract_height(row[2])[0]
         return feature
 
 if __name__ == '__main__':

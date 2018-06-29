@@ -8,21 +8,20 @@ from mycolorlog import UseStyle
 from sql.postgresql import PostgreSql
 import jwt
 
-def check_perms(self):
-    #only if url contain "debug=1" active this rule
-    if(self.get_argument("debug","")!="1"):
-        return True, None
-    auth_token = self.get_cookie("M_Auth_Token")
+def check_login(request):
+    auth_token = request.cookies.get("M_Auth_Token")
+    user = None
     if auth_token is None:
-        return False, None
+        raise Exception('No cookie')
     try:
         payload = jwt.decode(auth_token, 'ucenter', algorithms=['HS512'])
-        if payload:
-            return True, payload
+        if not payload:
+            raise Exception('Illegel User')
         else:
-            return False, None
+            user = payload['sub']
     except:
-        return False, None
+        raise
+    return user
 
 class CheckService():
     def __init__(self):
@@ -36,6 +35,16 @@ class CheckService():
         return loc
 
     def upload_check_result(self,request):
+        user = None
+        try:
+            user = check_login(request)
+            print user
+        except Exception as e:
+            print 'Exception', e
+            return {'result': 'Login Fail'} 
+        finally:
+            if user is None:
+                return {'result': 'Login Fail'}      
         requestValues = request.values
         frameId = requestValues.get('image_key')
         packetName = requestValues.get('packetName')
@@ -47,31 +56,33 @@ class CheckService():
 
         sql = """insert into human_check (keyframe_id, packet_name, photo_result, detection_result, spslam_result, \
             check_time, user_name, work_order, comment ) values ({}, '{}', '{}', '{}', '{}', '{}', '{}', '{}', \
-            '{}') returning id""".format(frameId, packetName, photoResult, detectionResult, 
-            spslamResult, check_time, 'changyu', 'test', commentResult)
+            '{}') returning id""".format(frameId, packetName, photoResult, detectionResult,
+            spslamResult, check_time, user, 'test', commentResult)
         print sql
-        # checkResult = {
-        # 'keyframe_id' : requestValues.get('id'),
-        # 'photo_result' : requestValues.get('photoResult'),
-        # 'detection_result' : requestValues.get('detectionResult'),
-        # 'spslam_result' : requestValues.get('spslamResult'),
-        # 'comment' : requestValues.get('commentResult'),
-        # 'check_time' : time.strftime('%Y-%m-%d %H:%M:%S'),
-        # }
         self.__psql.execute(sql)
         return {'result' : 'OK'}
 
     def get_check_result(self, packetName, request):
-        # packetName = request.values.get('packetname')
+        user = None
+
+        try:
+            user = check_login(request)
+        except Exception as e:
+            print e
+            return {'result': 'Login Fail'} 
+        finally:
+            if user is None:
+                return {'result': 'Login Fail'} 
         packetName = packetName
         sql = """select human_check.keyframe_id, human_check.photo_result, human_check.detection_result, \
         human_check.spslam_result, human_check.comment, ST_AsText(keyframes.geom) \
         from human_check left join keyframes on (human_check.keyframe_id = keyframes.id) \
-         where human_check.packet_name = '{}' and human_check.user_name = 'changyu'""".format(packetName)
+            where human_check.packet_name = '{}' and human_check.user_name = '{}'""".format(packetName, user)
+        print sql
         rows = None
         try:
             rows = self.__psql.execute(sql)
-        except Exception as e:
+        except Exception as e:  
             raise
         result = {}
         for row in rows:
@@ -83,6 +94,7 @@ class CheckService():
                 'loc' : self.__extract_loc(row[5])
             }
         return result
+
 
 if __name__ == '__main__':
     checkService = CheckService()

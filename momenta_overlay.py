@@ -2,7 +2,6 @@
 # -*- coding: UTF-8 -*- 
 from flask import Flask, jsonify, request, Response, redirect, url_for
 from flask import abort
-import psycopg2
 from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
@@ -12,8 +11,6 @@ import json
 import re
 import time as time
 import os 
-
-conn = None
 
 app = Flask(__name__)
 # app.register_blueprint(login_router)
@@ -34,12 +31,9 @@ def index():
 def hello1():
     print 1
     params = request.args
-    # bbox = params.get('bbox').split(',')
-    # FeatureCollection = jsonify_image(bbox) chance
     result = {'test':1} 
     return Response(json.dumps(result), status = 200,mimetype='application/json')
     
-#@app.route('/images/')
 @app.route('/images')
 def get_images():  
 
@@ -67,12 +61,10 @@ def get_images():
     jsonResp = json.dumps(FeatureCollection) 
     resp = Response(jsonResp, status=200,mimetype='application/json')
     resp.headers['Link'] = link
-
     endtime = time.clock()
     print UseStyle(('Total Time cost:', endtime - starttime), fore = 'yellow')
     return resp
 
-#@app.route('/imagekey/')
 @app.route('/imagekey')
 def get_image_key():
     print UseStyle('Image_Key',   fore = 'red')
@@ -82,7 +74,6 @@ def get_image_key():
     print UseStyle(url, fore = 'red')
     return redirect(url)
   
-
 @app.route('/object')
 def get_objects():
     params = request.args
@@ -100,7 +91,6 @@ def get_detections():
     url = detectionService.get_s3url(params)
     return redirect(url)
 
-
 @app.route('/location/keyframe', methods=['GET','POST'])
 def get_frame_location():
     imageKey = request.values.get('imagekey')
@@ -117,31 +107,50 @@ def get_packet_location():
     result = detectionService.get_packet_location(packetName)
     return Response(json.dumps(result), status = 200, mimetype = 'application/json')
 
-@app.route('/checkresult',methods=['GET', 'POST'])
+@app.route('/checkresult',methods=['POST'])
 def record_check_result():
-    print request.values
     checkService = CheckService()
-    result = checkService.upload_check_result(request)
-    return Response(json.dumps(result), status = 200, mimetype = 'application/json')
+    try:
+        result = checkService.upload_check_result(request)
+        if result['result'] == 'OK':
+            resp = Response(json.dumps(result), status = 200, mimetype = 'application/json')
+            origin = request.environ['HTTP_ORIGIN']
+            resp.headers.add('Access-Control-Allow-Credentials', "true")
+            resp.headers.add('Access-Control-Allow-Origin', origin)
+            return resp
+        else:
+            return Response(json.dumps(result), 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
+    except Exception as e:
+        print e
+        abort(404)
 
-@app.route('/checkresult/<variable>',methods=['GET'])
+@app.route('/checkresult/<variable>',methods=['POST'])
 def get_check_result(variable):
     checkService = CheckService()
     try:
+        origin = request.environ['HTTP_ORIGIN']
         result = checkService.get_check_result(variable, request)
-        return Response(json.dumps(result), status = 200, mimetype = 'application/json')
-    except:
+        print result
+        resp = None
+        if result.has_key('result'):
+            resp =  Response(json.dumps(result), 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
+        else:
+            resp = Response(json.dumps(result), status = 200, mimetype = 'application/json')
+        resp.headers.add('Access-Control-Allow-Credentials', "true")
+        resp.headers.add('Access-Control-Allow-Origin', origin)
+        return resp            
+    except Exception as e:
+        print e
         abort(404)
-
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    if response.headers.get('Access-Control-Allow-Origin') is None:
+        response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST')
     response.headers.add('Access-Control-Expose-Headers','link')
     return response
-
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0' ,port = 5123, debug=True)
