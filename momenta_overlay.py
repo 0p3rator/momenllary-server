@@ -6,6 +6,7 @@ from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
 from service.check_service import CheckService
+from service.sequence_service import SequenceService
 from login import login_router
 import json
 import re
@@ -27,12 +28,28 @@ def index():
     resp = Response(txt, status=200, mimetype='application/json')
     return resp
 
-@app.route('/sequences')
-def hello1():
-    print 1
+@app.route('/sequences', methods=['GET'])
+def get_sequence():
+    requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
+    requestUrl = re.sub('\'', '', requestUrl)
+
     params = request.args
-    result = {'test':1} 
-    return Response(json.dumps(result), status = 200,mimetype='application/json')
+    startkey = params.get('start_key')
+    if startkey is not None:
+        requestUrl = re.sub('&start_key=[0-9]+', '', requestUrl)
+
+    sequence_service = SequenceService()
+    features_collection = sequence_service.get_sequences(params) 
+
+    link = '<{}>; rel="first",'.format(requestUrl)
+    if (features_collection['next_start_key'] != 0):
+        link = """{}<{}&start_key={}>; rel="next" """.format(link, requestUrl, features_collection['next_start_key'])
+    del features_collection['next_start_key']
+    print link
+    # return Response('{"hello": "test"}', status=200, mimetype='application/json')
+    resp = Response(json.dumps(features_collection), status = 200,mimetype='application/json')
+    resp.headers['Link'] = link
+    return resp
     
 @app.route('/images')
 def get_images():  
