@@ -23,18 +23,18 @@ login_manager.login_view = 'login'
 # 这个callback函数用于reload User object，根据session中存储的user id
 @login_manager.user_loader
 def load_user(user_id):
-    print "load_user"
+    #print "load_user"
     return User.get(user_id)
 
 @login_router.route('/login', methods=['GET','POST'])
 def login():
-    print 1000
+    #print 1000
     form = LoginForm()
-    print (form.validate_on_submit())
+    #print (form.validate_on_submit())
     if form.validate_on_submit():
         user_name = request.form.get('username', None)
         password = request.form.get('password', None)
-        print user_name
+        #print user_name
         # remember_me = request.form.get('remember_me', False)
         user = User(user_name)
         if user.verify_password(password):

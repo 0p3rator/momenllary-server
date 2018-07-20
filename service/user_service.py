@@ -19,7 +19,7 @@ class User(UserMixin):
     @password.setter
     def password(self, password):
         #save to json tempor
-        print 1
+        #print 1
         self.__password_hash = generate_password_hash(password)
 
         with open(PROFILE_FILE, 'w+') as f:

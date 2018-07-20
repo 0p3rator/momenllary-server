@@ -6,6 +6,7 @@ from mycolorlog import UseStyle
 from service.image_service import ImageService
 from service.detection_service import DetectionService
 from service.check_service import CheckService
+from service.sequence_service import SequenceService
 from login import login_router
 import json
 import re
@@ -13,12 +14,12 @@ import time as time
 import os 
 
 app = Flask(__name__)
-# app.register_blueprint(login_router)
+# app.register_blue#print(login_router)
 
 @app.before_request
 def before_request():
-    print UseStyle(request.method, fore = 'red')
-    print request.endpoint
+    print(UseStyle(request.method, fore = 'red'))
+    print(request.endpoint)
 
 @app.route('/')
 def index():
@@ -27,12 +28,27 @@ def index():
     resp = Response(txt, status=200, mimetype='application/json')
     return resp
 
-@app.route('/sequences')
-def hello1():
-    print 1
+@app.route('/sequences', methods=['GET'])
+def get_sequence():
+    requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
+    requestUrl = re.sub('\'', '', requestUrl)
+
     params = request.args
-    result = {'test':1} 
-    return Response(json.dumps(result), status = 200,mimetype='application/json')
+    startkey = params.get('start_key')
+    if startkey is not None:
+        requestUrl = re.sub('&start_key=[0-9]+', '', requestUrl)
+
+    sequence_service = SequenceService()
+    features_collection = sequence_service.get_sequences(params) 
+
+    link = '<{}>; rel="first",'.format(requestUrl)
+    if (features_collection['next_start_key'] != 0):
+        link = """{}<{}&start_key={}>; rel="next" """.format(link, requestUrl, features_collection['next_start_key'])
+    del features_collection['next_start_key']
+    # return Response('{"hello": "test"}', status=200, mimetype='application/json')
+    resp = Response(json.dumps(features_collection), status = 200,mimetype='application/json')
+    resp.headers['Link'] = link
+    return resp
     
 @app.route('/images')
 def get_images():  
@@ -47,7 +63,7 @@ def get_images():
         requestUrl = re.sub('&start_key=[0-9]+', '', requestUrl)
 
     bbox = params.get('bbox').split(',')
-    print UseStyle(bbox, fore = 'yellow')
+    #print(UseStyle(bbox, fore = 'yellow'))
     imageservice = ImageService()
     FeatureCollection = imageservice.get_images(params, bbox) 
 
@@ -57,21 +73,22 @@ def get_images():
     del FeatureCollection['next_start_key']
 
     length = len(FeatureCollection['features'])
-    print UseStyle(length, fore = 'yellow')
+    #print(UseStyle(length, fore = 'yellow'))
     jsonResp = json.dumps(FeatureCollection) 
+    print(UseStyle(("TEST"), fore='yellow'))
     resp = Response(jsonResp, status=200,mimetype='application/json')
     resp.headers['Link'] = link
     endtime = time.clock()
-    print UseStyle(('Total Time cost:', endtime - starttime), fore = 'yellow')
+    #print(UseStyle(('Total Time cost:', endtime - starttime), fore = 'yellow'))
     return resp
 
 @app.route('/imagekey')
 def get_image_key():
-    print UseStyle('Image_Key',   fore = 'red')
+    #print(UseStyle('Image_Key',   fore = 'red'))
     params = request.args
     detectionService = DetectionService()
     url = detectionService.get_s3url(params)
-    print UseStyle(url, fore = 'red')
+    #print(UseStyle(url, fore = 'red'))
     return redirect(url)
   
 @app.route('/object')
@@ -79,7 +96,7 @@ def get_objects():
     params = request.args
     bbox = params.get('bbox').split(',')
     # object_service.get_objects(bbox)
-    print UseStyle(bbox, fore = 'red')
+    #print(UseStyle(bbox, fore = 'red'))
     return jsonify({'tasks': 'ab'})  
 
 #@app.route('/detection/')
@@ -94,7 +111,7 @@ def get_detections():
 @app.route('/location/keyframe', methods=['GET','POST'])
 def get_frame_location():
     imageKey = request.values.get('imagekey')
-    print imageKey
+    #print(imageKey)
     detectionService = DetectionService() 
     result = detectionService.get_frame_location(imageKey)
     return Response(json.dumps(result), status = 200,mimetype='application/json')
@@ -102,7 +119,7 @@ def get_frame_location():
 @app.route('/location/packet', methods=['GET', 'POST'])
 def get_packet_location():
     packetName = request.values.get('packetname')
-    print packetName
+    #print(packetName)
     detectionService = DetectionService()
     result = detectionService.get_packet_location(packetName)
     return Response(json.dumps(result), status = 200, mimetype = 'application/json')
@@ -122,7 +139,7 @@ def record_check_result():
         resp.headers.add('Access-Control-Allow-Origin', origin)
         return resp
     except Exception as e:
-        print e
+        #print(e)
         abort(404)
 
 @app.route('/checkresult/<variable>',methods=['POST'])
@@ -131,7 +148,7 @@ def get_check_result(variable):
     try:
         origin = request.environ['HTTP_ORIGIN']
         result = checkService.get_check_result(variable, request)
-        print result
+        #print(result)
         resp = None
         if result.has_key('result'):
             resp =  Response(json.dumps(result), 401, {'WWWAuthenticate':'Basic realm="Login Required"'})
@@ -141,7 +158,7 @@ def get_check_result(variable):
         resp.headers.add('Access-Control-Allow-Origin', origin)
         return resp            
     except Exception as e:
-        print e
+        #print(e)
         abort(404)
 
 @app.after_request

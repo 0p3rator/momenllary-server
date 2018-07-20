@@ -1,8 +1,6 @@
 # -*- coding: UTF-8 -*-
 import time
 import sys
-reload(sys)
-sys.setdefaultencoding( "utf-8" )
 sys.path.append("..")
 from mycolorlog import UseStyle
 from sql.postgresql import PostgreSql
@@ -38,9 +36,9 @@ class CheckService():
         user = None
         try:
             user = check_login(request)
-            print user
+            #print(user)
         except Exception as e:
-            print 'Exception', e
+            #print('Exception', e)
             return {'result': 'Login Fail'} 
         finally:
             if user is None:
@@ -58,7 +56,7 @@ class CheckService():
             check_time, user_name, work_order, comment ) values ({}, '{}', '{}', '{}', '{}', '{}', '{}', '{}', \
             '{}') returning id""".format(frameId, packetName, photoResult, detectionResult,
             spslamResult, check_time, user, 'test', commentResult)
-        print sql
+        #print(sql)
         self.__psql.execute(sql)
         return {'result' : 'OK'}
 
@@ -68,7 +66,7 @@ class CheckService():
         try:
             user = check_login(request)
         except Exception as e:
-            print e
+            #print(e)
             return {'result': 'Login Fail'} 
         finally:
             if user is None:
@@ -78,7 +76,7 @@ class CheckService():
         human_check.spslam_result, human_check.comment, ST_AsText(keyframes.geom) \
         from human_check left join keyframes on (human_check.keyframe_id = keyframes.id) \
             where human_check.packet_name = '{}' and human_check.user_name = '{}'""".format(packetName, user)
-        print sql
+        #print(sql)
         rows = None
         try:
             rows = self.__psql.execute(sql)
@@ -98,4 +96,4 @@ class CheckService():
 
 if __name__ == '__main__':
     checkService = CheckService()
-    print checkService.get_check_result('B6-2018-02-24-13-30-05','')
+    #print(checkService.get_check_result('B6-2018-02-24-13-30-05',''))

@@ -1,12 +1,22 @@
 from functools import wraps
 import psycopg2.pool
 import psycopg2.extras
-from time import time
-from time import sleep
+import time as time
 import sys
 sys.path.append("..")
 from mycolorlog import UseStyle
 from conf.conf import postgresql as pgcfg
+
+def log_query(func):
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        start_time = time.time()
+        #print args
+        run = func(*args,**kwargs)
+        end_time = time.time()
+        print(UseStyle(('Query time cost is: ', end_time - start_time), fore='yellow'))
+        return run
+    return wrap
 
 def Singleton(cls):
     _instance = {}
@@ -24,7 +34,7 @@ class PostgreSql(object):
     def __init__(self):      
         self.__conn = psycopg2.pool.ThreadedConnectionPool(
             minconn=1,
-            maxconn=20,
+            maxconn=500,
             dbname=pgcfg['dbname'],
             user=pgcfg['user'],
             password=pgcfg['password'], 
@@ -32,10 +42,11 @@ class PostgreSql(object):
             port=pgcfg['port']
             )
         if self.__conn is None:
-            print "error"
+            print("error")
 
+    @log_query
     def execute(self, queryString):
-        #print queryString
+        print(queryString)
         result_set = None
         conn = None
         try:
@@ -47,7 +58,7 @@ class PostgreSql(object):
             conn.commit()
             
         except (Exception, psycopg2.DatabaseError) as error:
-            print UseStyle(error, fore = 'red')
+            #print UseStyle(error, fore = 'red')
             raise Exception
         finally:
             if conn is not None:
@@ -72,13 +83,13 @@ if __name__ == '__main__':
     for i in range(1,5):
         try:        
             conn =  pg.get_conn()
-            print conn
+            #print conn
             cur = conn.cursor()
             cur.execute("select * from keyframes limit 2")
             result_set = cur.fetchall()
-            #print result_set
+            ##print result_set
             cur.close()
             #conn.commit()
             #pg.put_conn(conn)
         except (Exception, psycopg2.DatabaseError) as error:
-            print "error in executing with exception: ",error
+            print("error in executing with exception: ",error)

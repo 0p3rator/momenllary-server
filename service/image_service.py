@@ -1,4 +1,3 @@
-
 import json
 import copy
 import time
@@ -9,7 +8,6 @@ import numpy as np
 import sys
 import re
 sys.path.append("..")
-from mycolorlog import UseStyle
 from sql.postgresql import PostgreSql
 
 feature = {
@@ -40,7 +38,7 @@ class ImageService(object):
         perPage = params.get('per_page')
         startKey = params.get('start_key')
         image_packet = params.get('image_packet')
-        print image_packet
+        #print(image_packet)
         image_packet_filter = ""
         if (image_packet is None):
             image_packet_filter = ""
@@ -49,7 +47,7 @@ class ImageService(object):
         if not startKey:
             startKey = 0
 
-        perQuery = long(perPage) + 1
+        perQuery = int(perPage) + 1
 
         FeatureCollection = {
         'type' : 'FeatureCollection',
@@ -61,7 +59,7 @@ class ImageService(object):
     image_packets.timestamp, keyframes.qw, keyframes.qx, keyframes.qy, keyframes.qz, keyframes.id \
     from keyframes left join image_packets \
     on (keyframes.image_packet_id = image_packets.id) where keyframes.geom && ST_SetSRID(\
-    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and keyframes.id >= {} order by keyframes.id limit {}\
+    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and timestamp < '2017-12-10' and keyframes.id >= {} order by keyframes.id limit {}\
     """.format(point1, point2, image_packet_filter, startKey, perQuery)
 
         rows = self.__psql.execute(sql)
@@ -99,10 +97,10 @@ class ImageService(object):
         else:            
             image_packets_arr = image_packets.split(' ')
             plateno = reduce(self.__remove_repeat, map(lambda x: x[0:2],image_packets_arr))
-            print plateno
+            #print(plateno)
             timestamp_arr = map(lambda x: time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(x[3:], "%Y-%m-%d-%H-%M-%S")), image_packets_arr)
             timestamp = reduce(lambda x, y: x + "', '" + y  , timestamp_arr)
-            print """and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp)
+            #print("""and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp))
             return """and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp)
 
     def __remove_repeat(self,x,y):
@@ -121,7 +119,7 @@ class ImageService(object):
         imagekey += local_str_time + '/keyframes/images/' + filename + '.jpg'
         imagekey = row[9]
         ##calculate euler rotation from quanternion
-        quanternion = map(lambda x:float(x),row[5:9])
+        quanternion = [float(x) for x in row[5:9]]
         matTemp = quat2mat(quanternion)
         # matTemp = self.__matConvert.dot(matTemp)
         eulerTemp = mat2euler(matTemp,"sxyz")

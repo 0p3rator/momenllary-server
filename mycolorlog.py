@@ -74,11 +74,11 @@ STYLE = {
 
 def UseStyle(string, mode = '', fore = '', back = ''):
 
-    mode  = '%s' % STYLE['mode'][mode] if STYLE['mode'].has_key(mode) else ''
+    mode  = '%s' % STYLE['mode'][mode] if mode in STYLE['mode'] else ''
 
-    fore  = '%s' % STYLE['fore'][fore] if STYLE['fore'].has_key(fore) else ''
+    fore  = '%s' % STYLE['fore'][fore] if fore in STYLE['fore'] else ''
 
-    back  = '%s' % STYLE['back'][back] if STYLE['back'].has_key(back) else ''
+    back  = '%s' % STYLE['back'][back] if back in STYLE['back'] else ''
 
     style = ';'.join([s for s in [mode, fore, back] if s])
 
@@ -92,40 +92,40 @@ def UseStyle(string, mode = '', fore = '', back = ''):
 
 def TestColor( ):
 
-    print UseStyle('正常显示')
-    print ''
+    print(UseStyle('正常显示'))
+    #print ''
 
-    print "测试显示模式"
-    print UseStyle('高亮',   mode = 'bold'),
-    print UseStyle('下划线', mode = 'underline'),
-    print UseStyle('闪烁',   mode = 'blink'),
-    print UseStyle('反白',   mode = 'invert'),
-    print UseStyle('不可见', mode = 'hide')
-    print ''
-
-
-    print "测试前景色"
-    print UseStyle('黑色',   fore = 'black'),
-    print UseStyle('红色',   fore = 'red'),
-    print UseStyle('绿色',   fore = 'green'),
-    print UseStyle('黄色',   fore = 'yellow'),
-    print UseStyle('蓝色',   fore = 'blue'),
-    print UseStyle('紫红色', fore = 'purple'),
-    print UseStyle('青蓝色', fore = 'cyan'),
-    print UseStyle('白色',   fore = 'white')
-    print ''
+    #print "测试显示模式"
+    #print UseStyle('高亮',   mode = 'bold'),
+    #print UseStyle('下划线', mode = 'underline'),
+    #print UseStyle('闪烁',   mode = 'blink'),
+    #print UseStyle('反白',   mode = 'invert'),
+    #print UseStyle('不可见', mode = 'hide')
+    #print ''
 
 
-    print "测试背景色"
-    print UseStyle('黑色',   back = 'black'),
-    print UseStyle('红色',   back = 'red'),
-    print UseStyle('绿色',   back = 'green'),
-    print UseStyle('黄色',   back = 'yellow'),
-    print UseStyle('蓝色',   back = 'blue'),
-    print UseStyle('紫红色', back = 'purple'),
-    print UseStyle('青蓝色', back = 'cyan'),
-    print UseStyle('白色',   back = 'white')
-    print ''
+    #print "测试前景色"
+    #print UseStyle('黑色',   fore = 'black'),
+    #print UseStyle('红色',   fore = 'red'),
+    #print UseStyle('绿色',   fore = 'green'),
+    #print UseStyle('黄色',   fore = 'yellow'),
+    #print UseStyle('蓝色',   fore = 'blue'),
+    #print UseStyle('紫红色', fore = 'purple'),
+    #print UseStyle('青蓝色', fore = 'cyan'),
+    #print UseStyle('白色',   fore = 'white')
+    #print ''
+
+
+    #print "测试背景色"
+    #print UseStyle('黑色',   back = 'black'),
+    #print UseStyle('红色',   back = 'red'),
+    #print UseStyle('绿色',   back = 'green'),
+    #print UseStyle('黄色',   back = 'yellow'),
+    #print UseStyle('蓝色',   back = 'blue'),
+    #print UseStyle('紫红色', back = 'purple'),
+    #print UseStyle('青蓝色', back = 'cyan'),
+    #print UseStyle('白色',   back = 'white')
+    #print ''
 if __name__ == '__main__':
 
     TestColor( )

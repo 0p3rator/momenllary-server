@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from s3_service import S3Service
+from .s3_service import S3Service
 
 import sys
 sys.path.append('..')
@@ -37,7 +37,7 @@ class DetectionService(object):
         sqlString = """select ST_AsText(keyframes.geom) as point, image_packets.plateno, image_packets.timestamp \
          from keyframes left join image_packets on (keyframes.image_packet_id = image_packets.id) \
           where keyframes.id = {}""".format(imageKey)
-        print sqlString
+        #print(sqlString)
         result = self.__psql.execute(sqlString)[0]
         resultJson = {}
         plateno = result['plateno']
@@ -53,11 +53,11 @@ class DetectionService(object):
         plateno = packetName[:2]
         timestamp = packetName[3:]
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(timestamp, "%Y-%m-%d-%H-%M-%S"))
-        print timestamp
+        #print(timestamp)
         sqlString = "select ST_AsText(keyframes.geom) \
         as point from keyframes where image_packet_id = (select id from image_packets where plateno = '{}' and timestamp = '{}')  \
         order by id".format(plateno, timestamp)
-        print sqlString
+        prin(sqlString)
         result = self.__psql.execute(sqlString)[0]
         resultJson = {}
         patt = re.compile(r'[0-9][0-9\.\s]+')

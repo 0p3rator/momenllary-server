@@ -44,7 +44,7 @@ def get_objects(bbox):
         conn = psycopg2.connect(dbname="map_data_origin", user="postgres", password="zuojingwei", host="mapeditor.momenta.works", port=5432)
         cur = conn.cursor() 
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        #print(error)
 
     #objects = QueryArea.queryArea(bbox[0],bbox[1],bbox[2],bbox[3])
     objects = QueryArea.queryArea(116.630, 40.273, 116.635, 40.275)["boards"]
@@ -55,16 +55,16 @@ def get_objects(bbox):
             timestamp = observer["basic_info_id"][3:]
             local_str_time = time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(timestamp, "%Y-%m-%d-%H-%M-%S"))
             sql = """select id from image_packets where plateno = '{}' and timestamp = '{}' """.format(plateno,local_str_time)
-            print sql
+            #print(sql)
             #查询数据库，读取对应image_packet_id
             image_packet_id = 0
             try:
                 cur.execute(sql)
                 row = cur.fetchone()
                 image_packet_id  = row[0]
-                print "image_packets_id: " ,image_packet_id
+                #print "image_packets_id: " ,image_packet_id
             except(Exception,psycopg2.DatabaseError) as error:
-                print(error)
+                #print(error)
             keyframesStr = ''
             keyframes = []
             for keyframe in observer["observers"]:
@@ -77,11 +77,11 @@ def get_objects(bbox):
 
             sql = """select id from keyframes_test where image_packet_id = {} and \
             filename in {} """.format(image_packet_id,keyframesStr)
-            print sql
+            #print sql
             cur.execute(sql)
             rows = cur.fetchall()
             for row in rows:
-                print row[0]
+                #print row[0]
         #feature["properties"]["detections"].push
 
     cur.close()
@@ -89,4 +89,4 @@ def get_objects(bbox):
     return objects
 
 if __name__=="__main__":
-  print json.dumps(QueryArea.queryArea(116.630, 40.273, 116.635, 40.275))
+  #print json.dumps(QueryArea.queryArea(116.630, 40.273, 116.635, 40.275))
