@@ -33,8 +33,8 @@ class PostgreSql(object):
     __cur = None
     def __init__(self):      
         self.__conn = psycopg2.pool.ThreadedConnectionPool(
-            minconn=1,
-            maxconn=500,
+            minconn=6,
+            maxconn=6,
             dbname=pgcfg['dbname'],
             user=pgcfg['user'],
             password=pgcfg['password'], 
