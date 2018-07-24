@@ -12,8 +12,16 @@ import json
 import re
 import time as time
 import os 
+from flask_caching import Cache
+import urllib
 
 app = Flask(__name__)
+cache = Cache(app, config={
+    'CACHE_TYPE':'filesystem',
+    'CACHE_DIR': './flask_cache',
+    'CACHE_DEFAULT_TIMEOUT': 360000,
+    'CACHE_THRESHOLD': 2048
+})
 # app.register_blue#print(login_router)
 
 @app.before_request
@@ -28,8 +36,17 @@ def index():
     resp = Response(txt, status=200, mimetype='application/json')
     return resp
 
+def cache_key():
+    args = request.args
+    key = request.path + '?' + urllib.parse.urlencode([
+        (k, v) for k in sorted(args) for v in sorted(args.getlist(k))
+    ])
+    return key
+
 @app.route('/sequences', methods=['GET'])
+@cache.cached(key_prefix=cache_key)
 def get_sequence():
+    
     requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
     requestUrl = re.sub('\'', '', requestUrl)
 
@@ -51,8 +68,8 @@ def get_sequence():
     return resp
     
 @app.route('/images')
+@cache.cached(key_prefix=cache_key)
 def get_images():  
-
     starttime = time.clock()
     requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
     requestUrl = re.sub('\'', '', requestUrl)
