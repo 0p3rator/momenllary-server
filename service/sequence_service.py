@@ -37,7 +37,7 @@ class SequenceService(object):
         next_key = 0
 
         sql = ('select distinct image_packets.id as id from image_packets left join keyframes on (keyframes.image_packet_id = image_packets.id) '
-            'where keyframes.geom && ST_SetSRID(ST_MakeBox2D(ST_Point({point1}), ST_Point({point2})), 4326) '
+            'where image_packets.geom && ST_SetSRID(ST_MakeBox2D(ST_Point({point1}), ST_Point({point2})), 4326) '
             'and image_packets.id >= {start_key} order by image_packets.id limit {per_page}').format(point1=point1, point2=point2, start_key=start_key, per_page=per_query)
         result = self.__psql.execute(sql)
         print('resultLength: ', len(result))

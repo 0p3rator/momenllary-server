@@ -44,7 +44,7 @@ def cache_key():
     return key
 
 @app.route('/sequences', methods=['GET'])
-@cache.cached(key_prefix=cache_key)
+# @cache.cached(key_prefix=cache_key)
 def get_sequence():
     
     requestUrl = re.search('\'.*\'', str(request), re.M|re.I).group(0)
