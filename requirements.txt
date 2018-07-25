@@ -1,3 +1,6 @@
+astroid
+asyncio
+asyncpg
 backports.functools-lru-cache
 boto3
 botocore
@@ -6,6 +9,7 @@ configparser
 docutils
 enum34
 Flask
+Flask-Caching
 Flask-Login
 Flask-WTF
 gevent
@@ -27,6 +31,7 @@ s3transfer
 singledispatch
 six
 transforms3d
+uvloop
 Werkzeug
 wrapt
 WTForms

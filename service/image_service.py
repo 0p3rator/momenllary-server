@@ -45,7 +45,7 @@ class ImageService(object):
         else:
             image_packet_filter = self.__extract_image_packet(image_packet)
         if not startKey:
-            startKey = 0
+            startKey = '32533459200' 
 
         perQuery = int(perPage) + 1
 
@@ -56,17 +56,17 @@ class ImageService(object):
         point1 = ", ".join(bbox[0:2])
         point2 = ", ".join(bbox[2:4])
         sql = """SELECT keyframes.image_packet_id, keyframes.filename, ST_AsText(keyframes.geom), image_packets.plateno, \
-    image_packets.timestamp, keyframes.qw, keyframes.qx, keyframes.qy, keyframes.qz, keyframes.id \
+    image_packets.timestamp, keyframes.qw, keyframes.qx, keyframes.qy, keyframes.qz, keyframes.id, keyframes.ca, keyframes.pose_confidence   \
     from keyframes left join image_packets \
     on (keyframes.image_packet_id = image_packets.id) where keyframes.geom && ST_SetSRID(\
-    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and timestamp < '2017-12-10' and keyframes.id >= {} order by keyframes.id limit {}\
+    ST_MakeBox2D(ST_Point({}),ST_Point({})),4326) {} and keyframes.filename <= '{}' order by keyframes.filename desc limit {}\
     """.format(point1, point2, image_packet_filter, startKey, perQuery)
 
         rows = self.__psql.execute(sql)
         nextStartKey = 0
         
         if len(rows) == perQuery:
-            nextStartKey = rows[-1][9]
+            nextStartKey = rows[-1][1]
             rows = rows[:-1]
         FeatureCollection['next_start_key'] = nextStartKey
 
@@ -97,10 +97,8 @@ class ImageService(object):
         else:            
             image_packets_arr = image_packets.split(' ')
             plateno = reduce(self.__remove_repeat, map(lambda x: x[0:2],image_packets_arr))
-            #print(plateno)
             timestamp_arr = map(lambda x: time.strftime("%Y-%m-%d %H:%M:%S", time.strptime(x[3:], "%Y-%m-%d-%H-%M-%S")), image_packets_arr)
             timestamp = reduce(lambda x, y: x + "', '" + y  , timestamp_arr)
-            #print("""and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp))
             return """and plateno in ('{}') and timestamp in ('{}')""".format(plateno, timestamp)
 
     def __remove_repeat(self,x,y):
@@ -118,25 +116,17 @@ class ImageService(object):
         imagekey = row[3] + '-' 
         imagekey += local_str_time + '/keyframes/images/' + filename + '.jpg'
         imagekey = row[9]
-        ##calculate euler rotation from quanternion
         quanternion = [float(x) for x in row[5:9]]
-        matTemp = quat2mat(quanternion)
-        # matTemp = self.__matConvert.dot(matTemp)
-        eulerTemp = mat2euler(matTemp,"sxyz")
-        ca = eulerTemp[2] * 57.3
-
-        #ca = quat2euler(quanternion,"szyx")[2] * 57.3 * -1
-        feature["properties"]["ca"] = str(ca)
+      
+        feature["properties"]["ca"] = str(row['ca'])
         feature["properties"]["key"] = imagekey 
         feature["properties"]["captured_at"] = row[1]
         feature["properties"]["username"] = row[3] + '-' + local_str_time 
         feature["geometry"]["coordinates"] = copy.deepcopy(loc)
         feature["properties"]['campos'] = quanternion
         feature["properties"]['height'] = self.__extract_height(row[2])[0]
+        feature['properties']['confidence'] = str(row['pose_confidence'])
         return feature
 
 if __name__ == '__main__':
     iss = ImageService()
-    #iss.remove_repeat('B5', 'B6')
-    #iss.extract_image_packet("B5-2017-12-01-15-30-10")
-    # iss.get_images([u'116.47705078125003', u'39.92658842190944', u'116.49902343750003', u'39.9434364619742'])
